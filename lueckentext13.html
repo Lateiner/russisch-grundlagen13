@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Aspekte: Lückentext Bunt</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --bg-color: #f4f6f8;
+            --text-color: #333;
+            
+            /* Farbcodierung */
+            --nsv-color: #0277bd; /* Kräftiges Blau */
+            --sv-color: #2e7d32;  /* Kräftiges Grün */
+            
+            /* Feedback */
+            --correct-bg: #e8f5e9;
+            --correct-border: #4caf50;
+            --wrong-bg: #ffebee;
+            --wrong-border: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .intro {
+            background-color: #e3f2fd;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .intro h3 { margin-top: 0; color: var(--primary); }
+        .intro ul { padding-left: 20px; margin-bottom: 0; }
+        
+        /* Legende für die Farben */
+        .legend {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .legend span.l-nsv { color: var(--nsv-color); margin-right: 15px; }
+        .legend span.l-sv { color: var(--sv-color); }
+
+        /* Der Textblock */
+        .story-text {
+            font-size: 1.15rem;
+            line-height: 2.4;
+            text-align: justify;
+        }
+
+        /* Die Dropdowns */
+        select {
+            font-size: 1rem;
+            padding: 5px 10px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+            cursor: pointer;
+            margin: 0 5px;
+            transition: all 0.3s;
+            font-family: inherit;
+            max-width: 100%;
+            font-weight: 500;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(63, 81, 181, 0.3);
+        }
+
+        /* Styling der Optionen (Die Farben in der Liste) */
+        option.opt-nsv { color: var(--nsv-color); font-weight: bold; }
+        option.opt-sv { color: var(--sv-color); font-weight: bold; }
+        option.opt-default { color: #555; }
+
+        /* Wenn das Select selbst eine Klasse bekommt (nach Auswahl) */
+        select.sel-nsv { color: var(--nsv-color); border-color: var(--nsv-color); }
+        select.sel-sv { color: var(--sv-color); border-color: var(--sv-color); }
+
+        /* Infinitive in Klammern */
+        .verb-hint {
+            color: #777;
+            font-size: 0.9rem;
+            font-style: italic;
+            margin-right: 3px;
+        }
+
+        /* Feedback Styles (Überschreiben die Farben) */
+        select.correct {
+            border-color: var(--correct-border) !important;
+            background-color: var(--correct-bg) !important;
+            color: #2e7d32 !important; /* Immer Grün bei Richtig */
+        }
+
+        select.wrong {
+            border-color: var(--wrong-border) !important;
+            background-color: var(--wrong-bg) !important;
+            color: #c62828 !important; /* Immer Rot bei Falsch */
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        button:active { transform: translateY(0); }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #78909c; }
+        .btn-solve { background-color: #ff9800; }
+
+        .feedback-message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 24px;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .story-text { text-align: left; font-size: 1rem; }
+            select { display: inline-block; width: auto; max-width: 100%; margin-bottom: 5px; }
+            button { width: 100%; margin-bottom: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Lückentext: Ein Tag im Park</h1>
+    
+    <div class="intro">
+        <h3>Anleitung</h3>
+        <p>Entscheide für jede Lücke: Ist es eine Hintergrundhandlung oder ein Ereignis?</p>
+        <div class="legend">
+            <span class="l-nsv">● НСВ (Unvollendet / Blau)</span>
+            <span class="l-sv">● СВ (Vollendet / Grün)</span>
+        </div>
+    </div>
+
+    <div class="story-text">
+        Вчера был отличный день. Утром я 
+        <span class="verb-hint">(aufstehen)</span>
+        <select data-correct="проснулся" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="просыпался" class="opt-nsv">просыпался (NSV)</option>
+            <option value="проснулся" class="opt-sv">проснулся (SV)</option>
+        </select>
+        рано. 
+        
+        Солнце ярко 
+        <span class="verb-hint">(scheinen)</span>
+        <select data-correct="светило" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="светило" class="opt-nsv">светило (NSV)</option>
+            <option value="посветило" class="opt-sv">посветило (SV)</option>
+        </select>.
+        
+        Я 
+        <span class="verb-hint">(frühstücken)</span>
+        <select data-correct="завтракал" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="завтракал" class="opt-nsv">завтракал (NSV)</option>
+            <option value="позавтракал" class="opt-sv">позавтракал (SV)</option>
+        </select>,
+        когда вдруг
+        <span class="verb-hint">(anrufen)</span>
+        <select data-correct="позвонил" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="звонил" class="opt-nsv">звонил (NSV)</option>
+            <option value="позвонил" class="opt-sv">позвонил (SV)</option>
+        </select>
+        мой друг Антон.
+        
+        Он 
+        <span class="verb-hint">(sagen)</span>
+        <select data-correct="сказал" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="говорил" class="opt-nsv">говорил (NSV)</option>
+            <option value="сказал" class="opt-sv">сказал (SV)</option>
+        </select>,
+        что хочет гулять.
+        
+        Мы 
+        <span class="verb-hint">(sich treffen)</span>
+        <select data-correct="встретились" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="встречались" class="opt-nsv">встречались (NSV)</option>
+            <option value="встретились" class="opt-sv">встретились (SV)</option>
+        </select>
+        в парке.
+        
+        Мы 
+        <span class="verb-hint">(spazieren)</span>
+        <select data-correct="гуляли" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="гуляли" class="opt-nsv">гуляли (NSV)</option>
+            <option value="погуляли" class="opt-sv">погуляли (SV)</option>
+        </select>
+        два часа и 
+        <span class="verb-hint">(diskutieren)</span>
+        <select data-correct="обсуждали" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="обсуждали" class="opt-nsv">обсуждали (NSV)</option>
+            <option value="обсудили" class="opt-sv">обсудили (SV)</option>
+        </select>
+        новости.
+        
+        В конце мы 
+        <span class="verb-hint">(essen)</span>
+        <select data-correct="съели" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="ели" class="opt-nsv">ели (NSV)</option>
+            <option value="съели" class="opt-sv">съели (SV)</option>
+        </select>
+        мороженое и 
+        <span class="verb-hint">(gehen)</span>
+        <select data-correct="пошли" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="шли" class="opt-nsv">шли (NSV)</option>
+            <option value="пошли" class="opt-sv">пошли (SV)</option>
+        </select>
+        домой.
+    </div>
+
+    <div class="feedback-message" id="feedback"></div>
+
+    <div class="controls">
+        <button class="btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetGame()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const selects = document.querySelectorAll('select');
+    const feedbackBox = document.getElementById('feedback');
+
+    // Funktion um die Farbe des Select-Feldes zu ändern, je nachdem was gewählt wurde
+    function updateColor(selectElement) {
+        // Feedback-Klassen entfernen, wenn der User die Antwort ändert
+        selectElement.classList.remove('correct', 'wrong');
+        
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        
+        // Klassen zurücksetzen
+        selectElement.classList.remove('sel-nsv', 'sel-sv');
+
+        // Prüfen welche Klasse die ausgewählte Option hat
+        if (selectedOption.classList.contains('opt-nsv')) {
+            selectElement.classList.add('sel-nsv');
+        } else if (selectedOption.classList.contains('opt-sv')) {
+            selectElement.classList.add('sel-sv');
+        }
+    }
+
+    function checkAnswers() {
+        let correctCount = 0;
+        let answeredCount = 0;
+
+        selects.forEach(select => {
+            const userAnswer = select.value;
+            const correctAnswer = select.getAttribute('data-correct');
+
+            // Entferne erst die Farb-Klassen, damit Rot/Grün Hintergrund sichtbar ist
+            select.classList.remove('sel-nsv', 'sel-sv');
+
+            if (userAnswer) {
+                answeredCount++;
+                if (userAnswer === correctAnswer) {
+                    select.classList.add('correct');
+                    select.classList.remove('wrong');
+                    correctCount++;
+                } else {
+                    select.classList.add('wrong');
+                    select.classList.remove('correct');
+                }
+            } else {
+                select.classList.remove('correct', 'wrong');
+            }
+        });
+
+        const total = selects.length;
+
+        if (answeredCount < total) {
+            feedbackBox.innerText = `Bitte füllen Sie alle Lücken aus. (${answeredCount}/${total})`;
+            feedbackBox.style.color = "#ff9800";
+        } else if (correctCount === total) {
+            feedbackBox.innerText = "Ausgezeichnet! Die Geschichte ergibt perfekten Sinn.";
+            feedbackBox.style.color = "#2e7d32";
+        } else {
+            feedbackBox.innerText = `Sie haben ${correctCount} von ${total} richtig.`;
+            feedbackBox.style.color = "#c62828";
+        }
+    }
+
+    function resetGame() {
+        selects.forEach(select => {
+            select.value = "";
+            select.classList.remove('correct', 'wrong', 'sel-nsv', 'sel-sv');
+        });
+        feedbackBox.innerText = "";
+    }
+
+    function showSolution() {
+        selects.forEach(select => {
+            const correctVal = select.getAttribute('data-correct');
+            select.value = correctVal;
+            
+            // Erst normale Farbklassen entfernen
+            select.classList.remove('sel-nsv', 'sel-sv');
+            
+            // Dann als "Richtig" markieren
+            select.classList.add('correct');
+            select.classList.remove('wrong');
+        });
+        feedbackBox.innerText = "Lösung angezeigt.";
+        feedbackBox.style.color = "#3f51b5";
+    }
+</script>
+
+</body>
+</html>
