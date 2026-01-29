@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Lückentext 2: Die Party</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --bg-color: #f0f4f8;
+            --text-color: #333;
+            
+            /* Farbcodierung Aspekte */
+            --nsv-color: #0277bd; /* Blau */
+            --sv-color: #2e7d32;  /* Grün */
+            
+            /* Feedback Farben */
+            --correct-bg: #e8f5e9;
+            --correct-border: #4caf50;
+            --wrong-bg: #ffebee;
+            --wrong-border: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        /* Anleitung & Legende */
+        .intro {
+            background-color: #e8eaf6;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+        .intro h3 { margin-top: 0; color: var(--primary); font-size: 1.1rem; }
+        
+        .legend {
+            font-size: 0.95rem;
+            margin-top: 10px;
+            font-weight: bold;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .legend span.l-nsv { color: var(--nsv-color); }
+        .legend span.l-sv { color: var(--sv-color); }
+
+        /* Der Textblock */
+        .story-text {
+            font-size: 1.15rem;
+            line-height: 2.5; /* Hoher Zeilenabstand für mobile Bedienbarkeit */
+            text-align: justify;
+        }
+
+        /* Infinitive in Klammern */
+        .verb-hint {
+            color: #888;
+            font-size: 0.85rem;
+            font-style: italic;
+            margin-left: 2px;
+            margin-right: 4px;
+            white-space: nowrap;
+        }
+
+        /* Styling der Dropdowns */
+        select {
+            font-size: 1rem;
+            padding: 6px 10px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+            cursor: pointer;
+            margin: 0 2px;
+            transition: all 0.2s;
+            font-family: inherit;
+            max-width: 100%;
+            font-weight: 500;
+            min-width: 120px; /* Mindestbreite für Usability */
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
+        }
+
+        /* Optionen Farben */
+        option.opt-nsv { color: var(--nsv-color); font-weight: bold; }
+        option.opt-sv { color: var(--sv-color); font-weight: bold; }
+        option.opt-default { color: #777; }
+
+        /* Farbe NACH Auswahl (durch JS gesetzt) */
+        select.sel-nsv { color: var(--nsv-color); border-color: var(--nsv-color); }
+        select.sel-sv { color: var(--sv-color); border-color: var(--sv-color); }
+
+        /* Feedback Styles (Override mit !important) */
+        select.correct {
+            border-color: var(--correct-border) !important;
+            background-color: var(--correct-bg) !important;
+            color: #2e7d32 !important;
+        }
+        select.wrong {
+            border-color: var(--wrong-border) !important;
+            background-color: var(--wrong-bg) !important;
+            color: #c62828 !important;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        button:active { transform: translateY(0); }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #78909c; }
+        .btn-solve { background-color: #ff9800; }
+
+        .feedback-message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 24px;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .story-text { text-align: left; font-size: 1rem; line-height: 3; }
+            select { 
+                display: inline-block; 
+                width: 100%; 
+                margin-bottom: 5px; 
+                margin-top: 5px;
+            }
+            button { width: 100%; margin-bottom: 8px; }
+            .legend { flex-direction: column; gap: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Lückentext 2: Die Party (Вечеринка)</h1>
+    
+    <div class="intro">
+        <h3>Anleitung</h3>
+        <p>Ergänzen Sie den Text. Achten Sie auf den Unterschied: <strong>Prozess/Dauer (NSV)</strong> oder <strong>Resultat/Abschluss (SV)</strong>.</p>
+        <div class="legend">
+            <span class="l-nsv">● НСВ (Unvollendet / Blau)</span>
+            <span class="l-sv">● СВ (Vollendet / Grün)</span>
+        </div>
+    </div>
+
+    <div class="story-text">
+        В субботу мы 
+        <select data-correct="решили" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="решали" class="opt-nsv">решали</option>
+            <option value="решили" class="opt-sv">решили</option>
+        </select>
+        <span class="verb-hint">(entscheiden)</span>
+        устроить вечеринку.
+        
+        Сначала я
+        <select data-correct="позвонил" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="звонил" class="opt-nsv">звонил</option>
+            <option value="позвонил" class="opt-sv">позвонил</option>
+        </select>
+        <span class="verb-hint">(anrufen)</span>
+        друзьям.
+        
+        Я 
+        <select data-correct="приглашал" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="приглашал" class="opt-nsv">приглашал</option>
+            <option value="пригласил" class="opt-sv">пригласил</option>
+        </select>
+        <span class="verb-hint">(einladen)</span>
+        их целый час, потому что многие не отвечали.
+        
+        Потом я 
+        <select data-correct="пошёл" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="шёл" class="opt-nsv">шёл</option>
+            <option value="пошёл" class="opt-sv">пошёл</option>
+        </select>
+        <span class="verb-hint">(losgehen)</span>
+        в магазин.
+        
+        В магазине я долго
+        <select data-correct="выбирал" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="выбирал" class="opt-nsv">выбирал</option>
+            <option value="выбрал" class="opt-sv">выбрал</option>
+        </select>
+        <span class="verb-hint">(auswählen)</span>
+        продукты.
+        
+        Наконец я 
+        <select data-correct="купил" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="покупал" class="opt-nsv">покупал</option>
+            <option value="купил" class="opt-sv">купил</option>
+        </select>
+        <span class="verb-hint">(kaufen)</span>
+        всё и вернулся домой.
+        
+        Дома мама уже
+        <select data-correct="готовила" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="готовила" class="opt-nsv">готовила</option>
+            <option value="приготовила" class="opt-sv">приготовила</option>
+        </select>
+        <span class="verb-hint">(kochen - Prozess)</span>
+        ужин.
+        
+        Она 
+        <select data-correct="делала" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="делала" class="opt-nsv">делала</option>
+            <option value="сделала" class="opt-sv">сделала</option>
+        </select>
+        <span class="verb-hint">(machen)</span>
+        салаты, когда я вошёл.
+        
+        Через час она
+        <select data-correct="приготовила" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="готовила" class="opt-nsv">готовила</option>
+            <option value="приготовила" class="opt-sv">приготовила</option>
+        </select>
+        <span class="verb-hint">(zubereiten - fertig)</span>
+        огромный торт.
+        
+        В 19:00 
+        <select data-correct="пришли" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="приходили" class="opt-nsv">приходили</option>
+            <option value="пришли" class="opt-sv">пришли</option>
+        </select>
+        <span class="verb-hint">(ankommen)</span>
+        гости.
+        
+        Мы 
+        <select data-correct="сели" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="сидели" class="opt-nsv">сидели</option>
+            <option value="сели" class="opt-sv">сели</option>
+        </select>
+        <span class="verb-hint">(sich setzen)</span>
+        за стол.
+        
+        Весь вечер мы 
+        <select data-correct="разговаривали" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="разговаривали" class="opt-nsv">разговаривали</option>
+            <option value="сказали" class="opt-sv">сказали</option>
+        </select>
+        <span class="verb-hint">(sich unterhalten)</span>
+        о жизни.
+        
+        Мой друг Антон
+        <select data-correct="рассказал" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="рассказывал" class="opt-nsv">рассказывал</option>
+            <option value="рассказал" class="opt-sv">рассказал</option>
+        </select>
+        <span class="verb-hint">(erzählen - Resultat)</span>
+        смешную историю.
+        
+        Потом кто-то 
+        <select data-correct="открыл" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="открывал" class="opt-nsv">открывал</option>
+            <option value="открыл" class="opt-sv">открыл</option>
+        </select>
+        <span class="verb-hint">(öffnen)</span>
+        окно, потому что было жарко.
+        
+        Вечеринка 
+        <select data-correct="закончилась" onchange="updateColor(this)">
+            <option value="" class="opt-default">...</option>
+            <option value="заканчивалась" class="opt-nsv">заканчивалась</option>
+            <option value="закончилась" class="opt-sv">закончилась</option>
+        </select>
+        <span class="verb-hint">(enden)</span>
+        поздно ночью.
+    </div>
+
+    <div class="feedback-message" id="feedback"></div>
+
+    <div class="controls">
+        <button class="btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetGame()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const selects = document.querySelectorAll('select');
+    const feedbackBox = document.getElementById('feedback');
+
+    // Aktualisiert die Farbe des Auswahlfeldes basierend auf der Wahl (Blau/Grün)
+    function updateColor(selectElement) {
+        // Feedback-Klassen (Rot/Grün Hintergrund) entfernen bei Änderung
+        selectElement.classList.remove('correct', 'wrong');
+        
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        
+        // Aspekt-Klassen zurücksetzen
+        selectElement.classList.remove('sel-nsv', 'sel-sv');
+
+        // Neue Klasse setzen
+        if (selectedOption.classList.contains('opt-nsv')) {
+            selectElement.classList.add('sel-nsv');
+        } else if (selectedOption.classList.contains('opt-sv')) {
+            selectElement.classList.add('sel-sv');
+        }
+    }
+
+    function checkAnswers() {
+        let correctCount = 0;
+        let answeredCount = 0;
+
+        selects.forEach(select => {
+            const userAnswer = select.value;
+            const correctAnswer = select.getAttribute('data-correct');
+
+            // Vor der Prüfung die reinen Farbkennzeichnungen entfernen, 
+            // damit das Feedback (Richtig/Falsch) sichtbar ist.
+            select.classList.remove('sel-nsv', 'sel-sv');
+
+            if (userAnswer) {
+                answeredCount++;
+                if (userAnswer === correctAnswer) {
+                    select.classList.add('correct');
+                    select.classList.remove('wrong');
+                    correctCount++;
+                } else {
+                    select.classList.add('wrong');
+                    select.classList.remove('correct');
+                }
+            } else {
+                select.classList.remove('correct', 'wrong');
+            }
+        });
+
+        const total = selects.length;
+
+        if (answeredCount < total) {
+            feedbackBox.innerText = `Bitte füllen Sie alle Lücken aus. (${answeredCount}/${total})`;
+            feedbackBox.style.color = "#ff9800";
+        } else if (correctCount === total) {
+            feedbackBox.innerText = "Perfekt! Du beherrschst die Aspekte sehr gut.";
+            feedbackBox.style.color = "#2e7d32";
+        } else {
+            feedbackBox.innerText = `Du hast ${correctCount} von ${total} richtig.`;
+            feedbackBox.style.color = "#c62828";
+        }
+    }
+
+    function resetGame() {
+        selects.forEach(select => {
+            select.value = "";
+            select.classList.remove('correct', 'wrong', 'sel-nsv', 'sel-sv');
+        });
+        feedbackBox.innerText = "";
+    }
+
+    function showSolution() {
+        selects.forEach(select => {
+            const correctVal = select.getAttribute('data-correct');
+            select.value = correctVal;
+            
+            // Farbklassen entfernen
+            select.classList.remove('sel-nsv', 'sel-sv');
+            
+            // Als richtig markieren
+            select.classList.add('correct');
+            select.classList.remove('wrong');
+        });
+        feedbackBox.innerText = "Lösung angezeigt.";
+        feedbackBox.style.color = "#3f51b5";
+    }
+</script>
+
+</body>
+</html>
