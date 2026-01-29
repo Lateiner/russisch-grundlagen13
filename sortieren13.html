@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Sortieraufgabe: NSV vs. SV</title>
+    <!-- WICHTIG: Polyfill für Touch-Geräte (Handy/Tablet) -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #3f51b5; /* Indigo */
+            --nsv-color: #2196f3; /* Blau für NSV */
+            --sv-color: #4caf50; /* Grün für SV */
+            --bg-color: #f5f7fa;
+            --item-bg: #ffffff;
+            --text: #333;
+            --error: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .instructions {
+            text-align: center;
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        /* Bereich für die unsortierten Wörter */
+        .source-area {
+            background-color: #e3f2fd;
+            border: 2px dashed #90caf9;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        /* Die zwei Zielspalten */
+        .columns-container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .column {
+            flex: 1;
+            background-color: #fafafa;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 300px;
+            transition: background-color 0.3s;
+        }
+
+        .column h2 {
+            text-align: center;
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .col-nsv { border-color: var(--nsv-color); }
+        .col-nsv h2 { color: var(--nsv-color); }
+        
+        .col-sv { border-color: var(--sv-color); }
+        .col-sv h2 { color: var(--sv-color); }
+
+        /* Das ziehbare Wort */
+        .draggable {
+            background-color: var(--item-bg);
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 10px 15px;
+            cursor: grab;
+            user-select: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(1.02);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Feedback Farben */
+        .draggable.correct {
+            background-color: #e8f5e9;
+            border-color: var(--sv-color);
+            color: #2e7d32;
+        }
+
+        .draggable.wrong {
+            background-color: #ffebee;
+            border-color: var(--error);
+            color: #c62828;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s, box-shadow 0.2s;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        button:active { transform: translateY(1px); }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-check:hover { background-color: #303f9f; }
+
+        .btn-reset { background-color: #78909c; }
+        .btn-reset:hover { background-color: #607d8b; }
+
+        .btn-solve { background-color: #ff9800; }
+        .btn-solve:hover { background-color: #f57c00; }
+
+        .feedback-text {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .columns-container {
+                flex-direction: column; /* Untereinander auf kleinen Handys */
+            }
+            .column {
+                min-height: 150px;
+            }
+            .draggable {
+                font-size: 1rem;
+                padding: 8px 12px;
+            }
+            button {
+                width: 100%; /* Buttons volle Breite */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Aspekt-Sortierung</h1>
+    <p class="instructions">
+        Ziehen Sie die Verben in die richtige Spalte.<br>
+        Achten Sie auf Merkmale wie <strong>Präfixe</strong> (z.B. с-, по-, на-) und <strong>Suffixe</strong> (z.B. -ыва-, -ива-).
+    </p>
+
+    <!-- Hier liegen die Wörter am Anfang -->
+    <div class="source-area" id="source" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <!-- Wird per JS gefüllt -->
+    </div>
+
+    <div class="columns-container">
+        <!-- Spalte NSV -->
+        <div class="column col-nsv" id="nsv-col" data-type="nsv" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h2>НСВ<br><small style="font-size:0.6em; color:#666; font-weight:normal;">(Prozess / Unvollendet)</small></h2>
+        </div>
+
+        <!-- Spalte SV -->
+        <div class="column col-sv" id="sv-col" data-type="sv" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h2>СВ<br><small style="font-size:0.6em; color:#666; font-weight:normal;">(Resultat / Vollendet)</small></h2>
+        </div>
+    </div>
+
+    <div class="feedback-text" id="feedback"></div>
+
+    <div class="controls">
+        <button class="btn-check" onclick="checkSorting()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetGame()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // Die Verben mit Aspekt-Typ
+    // nsv = Imperfektiv, sv = Perfektiv
+    const verbs = [
+        { word: 'делать', type: 'nsv' },       // Basic
+        { word: 'сделать', type: 'sv' },       // Prefix c-
+        { word: 'спрашивать', type: 'nsv' },   // Suffix -ива-
+        { word: 'спросить', type: 'sv' },      // Short
+        { word: 'покупать', type: 'nsv' },     // Suffix -а-
+        { word: 'купить', type: 'sv' },        // Suffix -и-
+        { word: 'читать', type: 'nsv' },       // Basic
+        { word: 'прочитать', type: 'sv' },     // Prefix про-
+        { word: 'рассказывать', type: 'nsv' }, // Suffix -ыва-
+        { word: 'отдохнуть', type: 'sv' },     // Suffix -ну- (einmalig/kurz)
+        { word: 'написать', type: 'sv' },      // Prefix на-
+        { word: 'писать', type: 'nsv' }        // Basic
+    ];
+
+    const sourceContainer = document.getElementById('source');
+    const nsvColumn = document.getElementById('nsv-col');
+    const svColumn = document.getElementById('sv-col');
+    const feedbackBox = document.getElementById('feedback');
+
+    // Initialisierung
+    function initGame() {
+        sourceContainer.innerHTML = '';
+        nsvColumn.innerHTML = nsvColumn.querySelector('h2').outerHTML; // Nur Header behalten
+        svColumn.innerHTML = svColumn.querySelector('h2').outerHTML;   // Nur Header behalten
+        feedbackBox.innerText = '';
+        feedbackBox.style.color = 'inherit';
+
+        // Verben mischen
+        const shuffledVerbs = shuffle([...verbs]);
+
+        // Elemente erstellen
+        shuffledVerbs.forEach((item, index) => {
+            const el = document.createElement('div');
+            el.classList.add('draggable');
+            el.draggable = true;
+            el.innerText = item.word;
+            el.dataset.type = item.type;
+            el.id = 'verb-' + index;
+            
+            // Drag Events
+            el.addEventListener('dragstart', drag);
+            
+            sourceContainer.appendChild(el);
+        });
+    }
+
+    // Drag & Drop Funktionen
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+        // Feedback beim Ziehen entfernen
+        ev.target.classList.remove('correct', 'wrong');
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var draggedEl = document.getElementById(data);
+        
+        // Ziel finden (Bubble up falls auf ein H2 oder anderes Wort gedroppt wird)
+        let target = ev.target;
+        while (!target.classList.contains('column') && !target.classList.contains('source-area')) {
+            target = target.parentElement;
+            if(!target) return;
+        }
+
+        // Element verschieben
+        target.appendChild(draggedEl);
+    }
+
+    // Mischen (Fisher-Yates)
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Prüfen
+    function checkSorting() {
+        let errors = 0;
+        let placedCount = 0;
+
+        // NSV Spalte prüfen
+        const nsvItems = nsvColumn.querySelectorAll('.draggable');
+        nsvItems.forEach(el => {
+            placedCount++;
+            if (el.dataset.type === 'nsv') {
+                el.classList.add('correct');
+                el.classList.remove('wrong');
+            } else {
+                el.classList.add('wrong');
+                el.classList.remove('correct');
+                errors++;
+            }
+        });
+
+        // SV Spalte prüfen
+        const svItems = svColumn.querySelectorAll('.draggable');
+        svItems.forEach(el => {
+            placedCount++;
+            if (el.dataset.type === 'sv') {
+                el.classList.add('correct');
+                el.classList.remove('wrong');
+            } else {
+                el.classList.add('wrong');
+                el.classList.remove('correct');
+                errors++;
+            }
+        });
+
+        // Feedback Text
+        if (placedCount < verbs.length) {
+            feedbackBox.innerText = "Bitte ordnen Sie alle Wörter zu.";
+            feedbackBox.style.color = "#ff9800";
+        } else if (errors === 0) {
+            feedbackBox.innerText = "Perfekt! Alles richtig sortiert.";
+            feedbackBox.style.color = "var(--sv-color)";
+        } else {
+            feedbackBox.innerText = `${errors} Fehler gefunden. Rot markierte Wörter sind falsch.`;
+            feedbackBox.style.color = "var(--error)";
+        }
+    }
+
+    // Zurücksetzen
+    function resetGame() {
+        initGame();
+    }
+
+    // Lösung anzeigen
+    function showSolution() {
+        // Zuerst resetten, damit alles sauber ist
+        sourceContainer.innerHTML = '';
+        nsvColumn.innerHTML = nsvColumn.querySelector('h2').outerHTML;
+        svColumn.innerHTML = svColumn.querySelector('h2').outerHTML;
+        
+        verbs.forEach((item, index) => {
+            const el = document.createElement('div');
+            el.classList.add('draggable', 'correct'); // Gleich grün markieren
+            el.draggable = true;
+            el.innerText = item.word;
+            el.dataset.type = item.type;
+            el.id = 'verb-sol-' + index;
+
+            if (item.type === 'nsv') {
+                nsvColumn.appendChild(el);
+            } else {
+                svColumn.appendChild(el);
+            }
+        });
+
+        feedbackBox.innerText = "Lösung angezeigt.";
+        feedbackBox.style.color = "var(--primary)";
+    }
+
+    // Start
+    initGame();
+</script>
+
+</body>
+</html>
