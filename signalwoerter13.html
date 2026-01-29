@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Signalwörter: NSV vs. SV</title>
+    <!-- WICHTIG: Polyfill für Touch-Geräte (Handy/Tablet) -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --nsv-color: #039be5; /* Kräftiges Hellblau */
+            --sv-color: #43a047;  /* Kräftiges Grün */
+            --bg-color: #f0f4f8;
+            --item-bg: #ffffff;
+            --text: #333;
+            --error: #e53935;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+
+        .instructions {
+            text-align: center;
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        /* Der Bereich mit den gemischten Wörtern */
+        .source-area {
+            background-color: #eceff1;
+            border: 2px dashed #b0bec5;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 100px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        /* Container für die Spalten */
+        .columns-container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .column {
+            flex: 1;
+            background-color: #fafafa;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 350px;
+            transition: background-color 0.3s;
+        }
+
+        .column h2 {
+            text-align: center;
+            margin: 0 0 15px 0;
+            font-size: 1.3rem;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        /* Farbcodierung der Spalten */
+        .col-nsv { border-color: var(--nsv-color); background-color: #e1f5fe; }
+        .col-nsv h2 { color: var(--nsv-color); border-bottom-color: #b3e5fc; }
+        
+        .col-sv { border-color: var(--sv-color); background-color: #e8f5e9; }
+        .col-sv h2 { color: var(--sv-color); border-bottom-color: #c8e6c9; }
+
+        /* Das ziehbare Kärtchen */
+        .draggable {
+            background-color: var(--item-bg);
+            border: 1px solid #cfd8dc;
+            border-left: 5px solid #78909c; /* Neutraler grauer Rand am Anfang */
+            border-radius: 6px;
+            padding: 12px 15px;
+            cursor: grab;
+            user-select: none;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .draggable span.translation {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: normal;
+            margin-top: 2px;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(1.02);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            z-index: 100;
+        }
+
+        /* Feedback Farben (nach Überprüfung) */
+        .draggable.correct {
+            background-color: #ffffff;
+            border-color: #81c784;
+            border-left-color: var(--sv-color); /* Grün */
+            color: #2e7d32;
+        }
+        /* Spezialfall: Wenn es in NSV richtig ist, machen wir den Rand blau */
+        .col-nsv .draggable.correct {
+            border-left-color: var(--nsv-color);
+            color: #0277bd;
+        }
+
+        .draggable.wrong {
+            background-color: #ffebee;
+            border-color: var(--error);
+            border-left-color: var(--error);
+            color: #c62828;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+        }
+
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+        button:active { transform: translateY(0); }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #607d8b; }
+        .btn-solve { background-color: #ff9800; }
+
+        .feedback-text {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 24px;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 700px) {
+            .columns-container {
+                flex-direction: column;
+            }
+            .column {
+                min-height: 200px;
+            }
+            h1 { font-size: 1.5rem; }
+            button { width: 100%; margin-bottom: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Signalwörter-Zuordnung</h1>
+    <p class="instructions">
+        Welche Wörter signalisieren einen <strong>Prozess/Wiederholung (NSV)</strong> und welche ein <strong>Resultat/Einmaligkeit (SV)</strong>?<br>
+        Ziehen Sie die Wörter in die passende Spalte.
+    </p>
+
+    <!-- Startbereich -->
+    <div class="source-area" id="source" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <!-- Wird per JS gefüllt -->
+    </div>
+
+    <div class="columns-container">
+        <!-- Spalte NSV -->
+        <div class="column col-nsv" id="nsv-col" data-type="nsv" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h2>НСВ<br><small style="font-size:0.6em; font-weight:normal;">(oft, lange, immer)</small></h2>
+        </div>
+
+        <!-- Spalte SV -->
+        <div class="column col-sv" id="sv-col" data-type="sv" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h2>СВ<br><small style="font-size:0.6em; font-weight:normal;">(plötzlich, endlich, sofort)</small></h2>
+        </div>
+    </div>
+
+    <div class="feedback-text" id="feedback"></div>
+
+    <div class="controls">
+        <button class="btn-check" onclick="checkSorting()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetGame()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // Die Signalwörter
+    const signalWords = [
+        { word: 'часто', trans: 'oft', type: 'nsv' },
+        { word: 'всегда', trans: 'immer', type: 'nsv' },
+        { word: 'долго', trans: 'lange', type: 'nsv' },
+        { word: 'каждый день', trans: 'jeden Tag', type: 'nsv' },
+        { word: 'обычно', trans: 'gewöhnlich', type: 'nsv' },
+        { word: 'иногда', trans: 'manchmal', type: 'nsv' },
+        
+        { word: 'вдруг', trans: 'plötzlich', type: 'sv' },
+        { word: 'наконец', trans: 'endlich', type: 'sv' },
+        { word: 'сразу', trans: 'sofort', type: 'sv' },
+        { word: 'уже', trans: 'schon (Resultat)', type: 'sv' },
+        { word: 'неожиданно', trans: 'unerwartet', type: 'sv' },
+        { word: 'однажды', trans: 'eines Tages (einmal)', type: 'sv' }
+    ];
+
+    const sourceContainer = document.getElementById('source');
+    const nsvColumn = document.getElementById('nsv-col');
+    const svColumn = document.getElementById('sv-col');
+    const feedbackBox = document.getElementById('feedback');
+
+    function initGame() {
+        // Aufräumen
+        sourceContainer.innerHTML = '';
+        cleanColumn(nsvColumn);
+        cleanColumn(svColumn);
+        feedbackBox.innerText = '';
+        feedbackBox.style.color = 'inherit';
+
+        // Mischen
+        const shuffled = shuffle([...signalWords]);
+
+        // Erstellen
+        shuffled.forEach((item, index) => {
+            const el = document.createElement('div');
+            el.classList.add('draggable');
+            el.draggable = true;
+            el.id = 'word-' + index;
+            el.dataset.type = item.type;
+            
+            // Inhalt: Russisch + Deutsch klein darunter
+            el.innerHTML = `
+                <strong>${item.word}</strong>
+                <span class="translation">(${item.trans})</span>
+            `;
+            
+            el.addEventListener('dragstart', drag);
+            sourceContainer.appendChild(el);
+        });
+    }
+
+    // Hilfsfunktion: Spalte leeren aber Header behalten
+    function cleanColumn(col) {
+        const header = col.querySelector('h2');
+        col.innerHTML = '';
+        col.appendChild(header);
+    }
+
+    // Drag & Drop
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        // Wir speichern die ID des gezogenen Elements
+        // "text/plain" ist für manche Browser/Polyfills sicherer
+        ev.dataTransfer.setData("text/plain", ev.currentTarget.id);
+        ev.currentTarget.classList.remove('correct', 'wrong');
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text/plain");
+        const draggedEl = document.getElementById(data);
+        
+        if (!draggedEl) return;
+
+        // Ziel finden
+        let target = ev.target;
+        while (!target.classList.contains('column') && !target.classList.contains('source-area')) {
+            target = target.parentElement;
+            if(!target) return;
+        }
+
+        target.appendChild(draggedEl);
+    }
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function checkSorting() {
+        let errors = 0;
+        let placedCount = 0;
+        let totalItems = signalWords.length;
+
+        // Helper Funktion für Check
+        function checkItem(el, targetType) {
+            placedCount++;
+            if (el.dataset.type === targetType) {
+                el.classList.add('correct');
+                el.classList.remove('wrong');
+            } else {
+                el.classList.add('wrong');
+                el.classList.remove('correct');
+                errors++;
+            }
+        }
+
+        nsvColumn.querySelectorAll('.draggable').forEach(el => checkItem(el, 'nsv'));
+        svColumn.querySelectorAll('.draggable').forEach(el => checkItem(el, 'sv'));
+
+        // Feedback
+        if (placedCount < totalItems) {
+            feedbackBox.innerText = "Bitte ordnen Sie erst alle Wörter zu.";
+            feedbackBox.style.color = "#ff9800";
+        } else if (errors === 0) {
+            feedbackBox.innerText = "Ausgezeichnet! Alle Signalwörter richtig erkannt.";
+            feedbackBox.style.color = "var(--sv-color)";
+        } else {
+            feedbackBox.innerText = `${errors} Fehler gefunden. Achten Sie auf die Dauer vs. Moment.`;
+            feedbackBox.style.color = "var(--error)";
+        }
+    }
+
+    function showSolution() {
+        // Reset DOM
+        cleanColumn(nsvColumn);
+        cleanColumn(svColumn);
+        sourceContainer.innerHTML = '';
+
+        signalWords.forEach((item, index) => {
+            const el = document.createElement('div');
+            el.classList.add('draggable', 'correct');
+            el.draggable = true;
+            el.dataset.type = item.type;
+            el.innerHTML = `<strong>${item.word}</strong><span class="translation">(${item.trans})</span>`;
+
+            if (item.type === 'nsv') {
+                nsvColumn.appendChild(el);
+            } else {
+                svColumn.appendChild(el);
+            }
+        });
+
+        feedbackBox.innerText = "Lösung angezeigt.";
+        feedbackBox.style.color = "var(--primary)";
+    }
+
+    function resetGame() {
+        initGame();
+    }
+
+    // Start
+    initGame();
+</script>
+
+</body>
+</html>
