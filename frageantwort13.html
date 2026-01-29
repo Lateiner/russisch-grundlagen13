@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Pragmatik: Chat-Simulator (10 Fragen)</title>
+    <style>
+        :root {
+            --primary: #5c6bc0;
+            --bg-app: #e0e0e0;
+            --bg-chat: #ece5dd;
+            --bubble-ctx: #fff;
+            --bubble-user: #dcf8c6;
+            --text: #333;
+            --success: #4caf50;
+            --error: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-app);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .phone-frame {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--bg-chat);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 8px solid #333;
+            display: flex;
+            flex-direction: column;
+            /* Wichtig für lange Chats: Scrollen ermöglichen */
+            max-height: 90vh; 
+        }
+
+        /* Header */
+        .chat-header {
+            background-color: #075e54;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0; /* Header darf nicht schrumpfen */
+            z-index: 10;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #fff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+        }
+
+        .header-info h2 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        .header-info span {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* Chat Bereich - Scrollbar */
+        .chat-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            overflow-y: auto; /* Scrollbar aktivieren */
+            scroll-behavior: smooth;
+        }
+
+        /* Situation / Kontext Box */
+        .situation-box {
+            background-color: #fff3e0;
+            border: 1px solid #ffe0b2;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: -10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+        .situation-box strong { color: #e65100; display: block; margin-bottom: 3px;}
+
+        /* Die Auswahl-Optionen */
+        .choice-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .chat-option {
+            background-color: white;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-option:hover {
+            background-color: #f5f5f5;
+        }
+
+        .chat-option.selected {
+            border-color: var(--primary);
+            background-color: #e8eaf6;
+        }
+        
+        /* Indikator Kreis */
+        .circle {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+        .selected .circle {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Feedback Styles */
+        .chat-option.correct {
+            border-color: var(--success);
+            background-color: #e8f5e9;
+        }
+        .chat-option.correct .circle {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+
+        .chat-option.wrong {
+            border-color: var(--error);
+            background-color: #ffebee;
+            opacity: 0.7;
+        }
+
+        /* Text im Bubble */
+        .rus-text {
+            font-weight: bold;
+            font-size: 1rem;
+            display: block;
+            color: #222;
+        }
+        .aspect-hint {
+            font-size: 0.7rem;
+            color: #777;
+            margin-top: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Erklärung nach Lösung */
+        .explanation {
+            display: none;
+            font-size: 0.85rem;
+            color: var(--success);
+            padding: 8px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 5px;
+            margin-top: -5px;
+            border-left: 3px solid var(--success);
+        }
+        .explanation.show { display: block; }
+
+        /* Controls unten */
+        .controls-area {
+            background-color: #f0f0f0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            border-top: 1px solid #ccc;
+            flex-shrink: 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        button:active { transform: translateY(2px); }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #78909c; }
+        .btn-solve { background-color: #ff9800; }
+
+        /* Ergebnis-Anzeige */
+        #final-result {
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            display: none;
+            background: #fff;
+        }
+
+        @media (max-width: 500px) {
+            body { padding: 0; }
+            .phone-frame { border: none; border-radius: 0; height: 100vh; max-height: 100vh; }
+            .controls-area { padding-bottom: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="phone-frame">
+    <!-- Header -->
+    <div class="chat-header">
+        <div class="avatar">👩‍🏫</div>
+        <div class="header-info">
+            <h2>Russisch Coach</h2>
+            <span>10 Fragen | Online</span>
+        </div>
+    </div>
+
+    <!-- Chat Inhalt -->
+    <div class="chat-content" id="chatList">
+        
+        <!-- 1. Tätigkeit vs Resultat -->
+        <div class="situation-box">
+            <strong>1. Allgemeines Interesse</strong>
+            Du möchtest wissen, wie dein Freund den gestrigen Abend verbracht hat (Zeitvertreib).
+        </div>
+        <div class="choice-container" id="q1">
+            <div class="chat-option" onclick="selectOption('q1', 'a')">
+                <div><span class="rus-text">Что ты делал вчера?</span><span class="aspect-hint">НСВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="chat-option" onclick="selectOption('q1', 'b')">
+                <div><span class="rus-text">Что ты сделал вчера?</span><span class="aspect-hint">СВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="explanation" id="exp-q1">Richtig! Für allgemeine Beschäftigung (Prozess) nutzen wir НСВ.</div>
+        </div>
+
+        <!-- 2. Resultat / Lehrer -->
+        <div class="situation-box">
+            <strong>2. Kontrolle</strong>
+            Der Lehrer will das Heft einsammeln und wissen, ob die Hausaufgabe fertig ist.
+        </div>
+        <div class="choice-container" id="q2">
+            <div class="chat-option" onclick="selectOption('q2', 'a')">
+                <div><span class="rus-text">Ты делал домашнее задание?</span><span class="aspect-hint">НСВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="chat-option" onclick="selectOption('q2', 'b')">
+                <div><span class="rus-text">Ты сделал домашнее задание?</span><span class="aspect-hint">СВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="explanation" id="exp-q2">Genau! Hier zählt nur das Resultat (fertig oder nicht).</div>
+        </div>
+
+        <!-- 3. Erfahrung / Fakt -->
+        <div class="situation-box">
+            <strong>3. Erfahrung</strong>
+            Du fragst, ob jemand dieses Buch überhaupt kennt (jemals gelesen hat).
+        </div>
+        <div class="choice-container" id="q3">
+            <div class="chat-option" onclick="selectOption('q3', 'a')">
+                <div><span class="rus-text">Ты читал эту книгу?</span><span class="aspect-hint">НСВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="chat-option" onclick="selectOption('q3', 'b')">
+                <div><span class="rus-text">Ты прочитал эту книгу?</span><span class="aspect-hint">СВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="explanation" id="exp-q3">Korrekt. Für allgemeine Fakten/Erfahrungen in der Vergangenheit nutzen wir НСВ.</div>
+        </div>
+
+        <!-- 4. Resultat / Sättigung -->
+        <div class="situation-box">
+            <strong>4. Hunger?</strong>
+            Du willst wissen, ob jemand satt ist (und deshalb nichts essen will).
+        </div>
+        <div class="choice-container" id="q4">
+            <div class="chat-option" onclick="selectOption('q4', 'a')">
+                <div><span class="rus-text">Ты обедал?</span><span class="aspect-hint">НСВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="chat-option" onclick="selectOption('q4', 'b')">
+                <div><span class="rus-text">Ты пообедал?</span><span class="aspect-hint">СВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="explanation" id="exp-q4">Richtig! Das Resultat (satt sein) ist hier wichtiger als der Vorgang.</div>
+        </div>
+
+        <!-- 5. Prozessdauer -->
+        <div class="situation-box">
+            <strong>5. Dauer</strong>
+            Du erzählst, dass du den ganzen Abend beschäftigt warst.
+        </div>
+        <div class="choice-container" id="q5">
+            <div class="chat-option" onclick="selectOption('q5', 'a')">
+                <div><span class="rus-text">Я весь вечер учил слова.</span><span class="aspect-hint">НСВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="chat-option" onclick="selectOption('q5', 'b')">
+                <div><span class="rus-text">Я весь вечер выучил слова.</span><span class="aspect-hint">СВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="explanation" id="exp-q5">Gut! Zeitangaben wie "den ganzen Abend" (Dauer) verlangen meist NSV.</div>
+        </div>
+
+        <!-- 6. Aufeinanderfolge -->
+        <div class="situation-box">
+            <strong>6. Erzählung</strong>
+            Eine Kette von Ereignissen: Er stand auf, duschte und ging. (Kurz, nacheinander).
+        </div>
+        <div class="choice-container" id="q6">
+            <div class="chat-option" onclick="selectOption('q6', 'a')">
+                <div><span class="rus-text">Он вставал, принимал душ...</span><span class="aspect-hint">НСВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="chat-option" onclick="selectOption('q6', 'b')">
+                <div><span class="rus-text">Он встал, принял душ...</span><span class="aspect-hint">СВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="explanation" id="exp-q6">Richtig. Für eine Kette von einmaligen Handlungen nehmen wir SV.</div>
+        </div>
+
+        <!-- 7. Verbot -->
+        <div class="situation-box">
+            <strong>7. Verbot</strong>
+            Es ist kalt. Du willst nicht, dass jemand das Fenster öffnet.
+        </div>
+        <div class="choice-container" id="q7">
+            <div class="chat-option" onclick="selectOption('q7', 'a')">
+                <div><span class="rus-text">Не открывай окно!</span><span class="aspect-hint">НСВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="chat-option" onclick="selectOption('q7', 'b')">
+                <div><span class="rus-text">Не открой окно!</span><span class="aspect-hint">СВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="explanation" id="exp-q7">Stimmt! Verbote ("Tu das nicht") stehen im Russischen fast immer im NSV.</div>
+        </div>
+
+        <!-- 8. Bitte -->
+        <div class="situation-box">
+            <strong>8. Bitte</strong>
+            Es ist heiß. Du bittest jemanden, das Fenster einmalig zu öffnen.
+        </div>
+        <div class="choice-container" id="q8">
+            <div class="chat-option" onclick="selectOption('q8', 'a')">
+                <div><span class="rus-text">Открывай окно, пожалуйста.</span><span class="aspect-hint">НСВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="chat-option" onclick="selectOption('q8', 'b')">
+                <div><span class="rus-text">Открой окно, пожалуйста.</span><span class="aspect-hint">СВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="explanation" id="exp-q8">Genau. Eine konkrete Bitte um ein Resultat steht meist im SV.</div>
+        </div>
+
+        <!-- 9. Wiederholung -->
+        <div class="situation-box">
+            <strong>9. Wiederholung</strong>
+            Er hat mich früher jeden Tag angerufen.
+        </div>
+        <div class="choice-container" id="q9">
+            <div class="chat-option" onclick="selectOption('q9', 'a')">
+                <div><span class="rus-text">Он звонил каждый день.</span><span class="aspect-hint">НСВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="chat-option" onclick="selectOption('q9', 'b')">
+                <div><span class="rus-text">Он позвонил каждый день.</span><span class="aspect-hint">СВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="explanation" id="exp-q9">Korrekt. "Jeden Tag" signalisiert eine Wiederholung -> NSV.</div>
+        </div>
+
+        <!-- 10. Zukunft / Versprechen -->
+        <div class="situation-box">
+            <strong>10. Versprechen</strong>
+            Du versprichst dem Chef, dass der Bericht morgen fertig sein wird.
+        </div>
+        <div class="choice-container" id="q10">
+            <div class="chat-option" onclick="selectOption('q10', 'a')">
+                <div><span class="rus-text">Я буду делать это завтра.</span><span class="aspect-hint">НСВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="chat-option" onclick="selectOption('q10', 'b')">
+                <div><span class="rus-text">Я сделаю это завтра.</span><span class="aspect-hint">СВ</span></div>
+                <div class="circle"></div>
+            </div>
+            <div class="explanation" id="exp-q10">Super! Du versprichst das Resultat (den Abschluss), also SV.</div>
+        </div>
+
+    </div>
+
+    <!-- Ergebnis -->
+    <div id="final-result"></div>
+
+    <!-- Controls -->
+    <div class="controls-area">
+        <button class="btn-check" onclick="checkAnswers()">Prüfen</button>
+        <button class="btn-reset" onclick="resetGame()">Reset</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung</button>
+    </div>
+</div>
+
+<script>
+    // Konfiguration der richtigen Antworten (a oder b)
+    const answers = {
+        'q1': 'a', // Prozess
+        'q2': 'b', // Resultat
+        'q3': 'a', // Fakt
+        'q4': 'b', // Resultat
+        'q5': 'a', // Dauer
+        'q6': 'b', // Kette
+        'q7': 'a', // Verbot
+        'q8': 'b', // Bitte
+        'q9': 'a', // Wiederholung
+        'q10': 'b' // Versprechen
+    };
+
+    function selectOption(questionId, optionValue) {
+        const container = document.getElementById(questionId);
+        const options = container.querySelectorAll('.chat-option');
+
+        options.forEach(opt => {
+            opt.classList.remove('selected', 'correct', 'wrong');
+            // onclick Attribute auslesen um zu wissen welche gewählt wurde
+            const isTarget = opt.getAttribute('onclick').includes(`'${optionValue}'`);
+            
+            if (isTarget) {
+                opt.classList.add('selected');
+                opt.dataset.chosen = optionValue;
+            } else {
+                delete opt.dataset.chosen;
+            }
+        });
+        
+        // Erklärung ausblenden bei neuer Auswahl
+        const exp = document.getElementById('exp-' + questionId);
+        if(exp) exp.classList.remove('show');
+    }
+
+    function checkAnswers() {
+        let correctCount = 0;
+        let total = Object.keys(answers).length;
+        let allAnswered = true;
+
+        for (const [qId, correctVal] of Object.entries(answers)) {
+            const container = document.getElementById(qId);
+            const options = container.querySelectorAll('.chat-option');
+            let userSelected = null;
+            let selectedEl = null;
+
+            // Finde Auswahl
+            options.forEach(opt => {
+                if (opt.classList.contains('selected')) {
+                    selectedEl = opt;
+                    if (opt.getAttribute('onclick').includes(`'a'`)) userSelected = 'a';
+                    if (opt.getAttribute('onclick').includes(`'b'`)) userSelected = 'b';
+                }
+            });
+
+            if (userSelected) {
+                if (userSelected === correctVal) {
+                    selectedEl.classList.add('correct');
+                    // Erklärung anzeigen
+                    const exp = document.getElementById('exp-' + qId);
+                    if(exp) exp.classList.add('show');
+                    correctCount++;
+                } else {
+                    selectedEl.classList.add('wrong');
+                }
+            } else {
+                allAnswered = false;
+            }
+        }
+
+        // Ergebnistext anzeigen
+        const resBox = document.getElementById('final-result');
+        resBox.style.display = 'block';
+        if (!allAnswered) {
+            resBox.innerText = `Du hast ${correctCount} von ${total} richtig. Bitte beantworte alle Fragen!`;
+            resBox.style.color = '#ff9800';
+        } else if (correctCount === total) {
+            resBox.innerText = `Perfekt! Alle ${total} Situationen richtig gelöst.`;
+            resBox.style.color = '#4caf50';
+        } else {
+            resBox.innerText = `Ergebnis: ${correctCount} von ${total} richtig.`;
+            resBox.style.color = '#333';
+        }
+    }
+
+    function resetGame() {
+        const options = document.querySelectorAll('.chat-option');
+        options.forEach(opt => {
+            opt.classList.remove('selected', 'correct', 'wrong');
+            delete opt.dataset.chosen;
+        });
+        
+        const exps = document.querySelectorAll('.explanation');
+        exps.forEach(e => e.classList.remove('show'));
+
+        const resBox = document.getElementById('final-result');
+        resBox.style.display = 'none';
+        resBox.innerText = '';
+
+        // Nach oben scrollen
+        document.getElementById('chatList').scrollTop = 0;
+    }
+
+    function showSolution() {
+        resetGame(); 
+        
+        for (const [qId, correctVal] of Object.entries(answers)) {
+            const container = document.getElementById(qId);
+            const options = container.querySelectorAll('.chat-option');
+            
+            options.forEach(opt => {
+                if (opt.getAttribute('onclick').includes(`'${correctVal}'`)) {
+                    opt.classList.add('selected', 'correct');
+                }
+            });
+
+            const exp = document.getElementById('exp-' + qId);
+            if(exp) exp.classList.add('show');
+        }
+
+        const resBox = document.getElementById('final-result');
+        resBox.style.display = 'block';
+        resBox.innerText = 'Lösung angezeigt.';
+        resBox.style.color = '#5c6bc0';
+    }
+
+</script>
+
+</body>
+</html>
