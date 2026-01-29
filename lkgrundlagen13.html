@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russische Verbaspekte - Lernkartei</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32; /* Dunkelgrün */
+            --primary-light: #4caf50; /* Mittelgrün */
+            --primary-dark: #1b5e20; /* Sehr dunkles Grün */
+            --accent-color: #81c784; /* Hellgrün */
+            --bg-color: #e8f5e9; /* Sehr helles Grün (Hintergrund) */
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px; /* Zentrierter Inhalt, nicht volle Breite */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+
+        /* --- KARTEIKARTE (3D Flip) --- */
+        .card-container {
+            background-color: transparent;
+            width: 100%;
+            height: 300px;
+            perspective: 1000px; /* Nötig für 3D Effekt */
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow);
+            border-radius: 15px;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: var(--card-bg);
+            border: 2px solid var(--primary-light);
+            user-select: none;
+        }
+
+        .card-face.front {
+            /* Vorderseite Design */
+        }
+
+        .card-face.back {
+            background-color: #f1f8e9; /* Leicht anderes Grün für Rückseite */
+            transform: rotateY(180deg);
+            border-color: var(--primary-dark);
+        }
+
+        .card-label {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .card-content {
+            font-size: 2rem;
+            font-weight: 500;
+            color: var(--text-color);
+            line-height: 1.4;
+            word-wrap: break-word;
+            max-width: 100%;
+        }
+
+        /* Dynamische Schriftgröße für lange Wörter */
+        .long-text { font-size: 1.5rem; }
+        .very-long-text { font-size: 1.2rem; }
+
+        .hint-text {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* --- STEUERUNG --- */
+        .controls-main {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .controls-secondary {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: var(--primary-light);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.btn-secondary {
+            background-color: var(--accent-color);
+            color: var(--primary-dark);
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        button.btn-secondary:hover {
+            background-color: #a5d6a7;
+        }
+
+        /* --- FORTSCHRITT --- */
+        .progress-container {
+            width: 100%;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .progress-text {
+            font-weight: bold;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background-color: #c8e6c9;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* --- HILFE / SHORTCUTS --- */
+        .shortcuts {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #777;
+            text-align: center;
+            background: rgba(255,255,255,0.5);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 600px) {
+            .card-container {
+                height: 250px;
+            }
+            .card-content {
+                font-size: 1.5rem;
+            }
+            .long-text { font-size: 1.2rem; }
+            button {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+                flex: 1 0 40%; /* Buttons nehmen mehr Platz ein auf Handy */
+            }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Russische Verbaspekte</h1>
+            <p class="subtitle">НСВ (unvollendet) – СВ (vollendet)</p>
+        </header>
+
+        <!-- Karte -->
+        <div class="card-container" id="flashcard" onclick="flipCard()">
+            <div class="card" id="cardInner">
+                <!-- Vorderseite -->
+                <div class="card-face front">
+                    <div class="card-label">Russisch</div>
+                    <div class="card-content" id="cardFrontText">Lade...</div>
+                    <div class="hint-text">Klicken zum Umdrehen</div>
+                </div>
+                <!-- Rückseite -->
+                <div class="card-face back">
+                    <div class="card-label">Deutsch</div>
+                    <div class="card-content" id="cardBackText">...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fortschritt -->
+        <div class="progress-container">
+            <div class="progress-text" id="progressText">1 / 53</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <!-- Hauptnavigation -->
+        <div class="controls-main">
+            <button onclick="prevCard()">← Vorherige</button>
+            <button onclick="nextCard()">Nächste →</button>
+        </div>
+
+        <!-- Zusatzfunktionen -->
+        <div class="controls-secondary">
+            <button class="btn-secondary" onclick="resetToStart()">An den Anfang</button>
+            <button class="btn-secondary" onclick="shuffleCards()">Mischen 🔀</button>
+        </div>
+
+        <div class="shortcuts">
+            Tastatur: <strong>Leertaste/Enter</strong> (Drehen), <strong>←/→</strong> (Navigation), <strong>Pos1</strong> (Start)
+        </div>
+    </div>
+
+    <script>
+        // Die Rohdaten der Vokabelliste
+        const rawVocabData = `
+1.	дéлать – сдéлать - tun, machen
+2.	читáть – прочитáть - lesen
+3.	писáть – написáть - schreiben
+4.	учи́ть – вы́учить - lernen, auswendig lernen
+5.	изучáть – изучи́ть - studieren, erforschen
+6.	решáть – реши́ть - entscheiden, lösen
+7.	понимáть – поня́ть - verstehen
+8.	говори́ть – сказáть - sprechen – sagen
+9.	спрáшивать – спроси́ть - fragen
+10.	отвечáть – отвéтить - antworten
+11.	рассктáзывать – рассказáть - erzählen
+12.	разговáривать – поговори́ть - sich unterhalten
+13.	обсуждáть – обсуди́ть - diskutieren, besprechen
+14.	звони́ть – позвони́ть - anrufen
+15.	вставáть – встать - aufstehen
+16.	просыпáться – просну́ться - aufwachen
+17.	мы́ться – помы́ться - sich waschen
+18.	принимáть душ – приня́ть душ - duschen
+19.	отдыхáть – отдохну́ть - sich ausruhen
+20.	гуля́ть – погуля́ть - spazieren gehen
+21.	гoтóвить – приготóвить - kochen, zubereiten
+22.	зáвтракать – позáвтракать - frühstücken
+23.	обéдать – пообéдать - zu Mittag essen
+24.	у́жинать – поу́жинать - zu Abend essen
+25.	есть – съесть - essen – aufessen
+26.	пить – вы́пить - trinken – austrinken
+27.	идти́ – пойти́ - gehen – losgehen
+28.	приходи́ть – прийти́ - ankommen, kommen
+29.	встречáться – встрéтиться - sich treffen
+30.	сади́ться – сесть - sich setzen
+31.	покупáть – купи́ть - kaufen
+32.	выбирáть – вы́брать - auswählen
+33.	брать – взять - nehmen
+34.	давáть – дать - geben
+35.	открывáть – откры́ть - öffnen
+36.	закáнчиваться – закóнчиться - enden, zu Ende gehen
+37.	приглашáть – пригласи́ть - einladen
+38.	стрóить – пострóить - bauen
+39.	свети́ть – посвети́ть - scheinen
+40.	чáсто - oft (Signalwort für NSV)
+41.	всегдá - immer (Signalwort für NSV)
+42.	обы́чно - gewöhnlich (Signalwort für NSV)
+43.	инoгдá - manchmal (Signalwort für NSV)
+44.	рéдко - selten (Signalwort für NSV)
+45.	кáждый день - jeden Tag (Signalwort für NSV)
+46.	дóлго - lange (Signalwort für NSV)
+47.	весь день / весь вéчер - den ganzen Tag / den ganzen Abend (Signalwort für NSV)
+48.	вдруг - plötzlich (Signalwort für SV)
+49.	срáзу - sofort (Signalwort für SV)
+50.	накoнéц - endlich (Signalwort für SV)
+51.	ужé - schon (Signalwort für SV)
+52.	одна́жды - eines Tages, einmal (Signalwort für SV)
+53.	неожи́данно - unerwartet (Signalwort für SV)
+`;
+
+        // Zustand der Anwendung
+        let cards = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // --- INIT & PARSING ---
+
+        function init() {
+            parseData();
+            updateCardDisplay();
+            setupKeyboardListeners();
+        }
+
+        function parseData() {
+            // Zeilen aufteilen und leere Zeilen entfernen
+            const lines = rawVocabData.trim().split('\n');
+            
+            cards = lines.map(line => {
+                // Format: "1. Russisch - Deutsch"
+                // 1. Nummer am Anfang entfernen (Ziffern + Punkt + Leerzeichen)
+                let cleanLine = line.replace(/^\d+\.\s+/, '');
+                
+                // 2. Am ersten Bindestrich " - " trennen
+                // Wir nutzen Regex, um den Bindestrich mit Leerzeichen zu finden
+                let parts = cleanLine.split(/\s+-\s+(.+)/); 
+                // (.+) fängt den ganzen Rest ein, falls im deutschen Teil noch Bindestriche sind
+                
+                if (parts.length >= 2) {
+                    return {
+                        front: parts[0].trim(),
+                        back: parts[1].trim()
+                    };
+                }
+                return null;
+            }).filter(card => card !== null);
+        }
+
+        // --- CORE FUNCTIONS ---
+
+        function updateCardDisplay() {
+            const cardInner = document.getElementById('cardInner');
+            const frontEl = document.getElementById('cardFrontText');
+            const backEl = document.getElementById('cardBackText');
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+
+            // Reset Flip beim Wechseln der Karte
+            isFlipped = false;
+            cardInner.classList.remove('flipped');
+
+            // Daten setzen (kurze Verzögerung für Flip-Reset, falls nötig, hier aber direkt)
+            if (cards.length > 0) {
+                const currentCard = cards[currentIndex];
+                frontEl.innerText = currentCard.front;
+                backEl.innerText = currentCard.back;
+
+                // Dynamische Schriftgröße anpassen
+                adjustFontSize(frontEl, currentCard.front);
+                adjustFontSize(backEl, currentCard.back);
+
+                // Fortschritt
+                progressText.innerText = `${currentIndex + 1} / ${cards.length}`;
+                const percentage = ((currentIndex + 1) / cards.length) * 100;
+                progressBar.style.width = `${percentage}%`;
+            }
+        }
+
+        function adjustFontSize(element, text) {
+            // Einfache Heuristik für Schriftgröße
+            element.className = 'card-content'; // Reset
+            if (text.length > 40) {
+                element.classList.add('very-long-text');
+            } else if (text.length > 20) {
+                element.classList.add('long-text');
+            }
+        }
+
+        function flipCard() {
+            const cardInner = document.getElementById('cardInner');
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                cardInner.classList.add('flipped');
+            } else {
+                cardInner.classList.remove('flipped');
+            }
+        }
+
+        function nextCard() {
+            if (currentIndex < cards.length - 1) {
+                currentIndex++;
+            } else {
+                // Optional: Loop zum Anfang
+                currentIndex = 0;
+            }
+            updateCardDisplay();
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+            } else {
+                // Optional: Loop zum Ende
+                currentIndex = cards.length - 1;
+            }
+            updateCardDisplay();
+        }
+
+        function resetToStart() {
+            currentIndex = 0;
+            updateCardDisplay();
+        }
+
+        function shuffleCards() {
+            // Fisher-Yates Shuffle
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+            // Nach Mischen zum Anfang springen
+            currentIndex = 0;
+            updateCardDisplay();
+        }
+
+        // --- KEYBOARD CONTROLS ---
+
+        function setupKeyboardListeners() {
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case 'ArrowRight':
+                        nextCard();
+                        break;
+                    case 'ArrowLeft':
+                        prevCard();
+                        break;
+                    case ' ':
+                    case 'Enter':
+                        e.preventDefault(); // Verhindert Scrollen bei Leertaste
+                        flipCard();
+                        break;
+                    case 'Home':
+                        resetToStart();
+                        break;
+                }
+            });
+        }
+
+        // Starten
+        init();
+
+    </script>
+</body>
+</html>
