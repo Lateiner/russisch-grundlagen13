@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russische Grammatik: делать vs. сделать</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --primary-hover: #303f9f;
+            --light-bg: #f5f7fa;
+            --correct: #4caf50;
+            --incorrect: #f44336;
+            --text: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0e7ef;
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+
+        .intro-box {
+            background-color: #e8eaf6;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .exercise-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .exercise-title {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+            color: white;
+        }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-check:hover { background-color: var(--primary-hover); }
+        
+        .btn-reset { background-color: #78909c; }
+        .btn-reset:hover { background-color: #607d8b; }
+
+        .btn-solution { background-color: #ff9800; }
+        .btn-solution:hover { background-color: #f57c00; }
+
+        /* Inputs & Feedback */
+        input[type="text"], select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 0 5px;
+            font-size: 1rem;
+        }
+
+        .correct-input {
+            border-color: var(--correct) !important;
+            background-color: #e8f5e9 !important;
+        }
+
+        .incorrect-input {
+            border-color: var(--incorrect) !important;
+            background-color: #ffebee !important;
+        }
+
+        /* Radio Styles */
+        .radio-group label {
+            display: block;
+            margin-bottom: 8px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .radio-group label:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Drag and Drop Styles */
+        .dnd-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .dnd-source, .dnd-target {
+            min-height: 60px;
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background: #fafafa;
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-content: flex-start;
+        }
+
+        .dnd-target {
+            background-color: #e3f2fd;
+            border-color: var(--primary);
+        }
+
+        .dnd-target h4, .dnd-source h4 {
+            width: 100%;
+            margin: 0 0 5px 0;
+            font-size: 0.9em;
+            color: #666;
+            pointer-events: none;
+        }
+
+        .draggable {
+            background: white;
+            border: 1px solid #999;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+        }
+
+        /* Visual Feedback Text */
+        .feedback-msg {
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        .feedback-msg.show { display: block; }
+        .text-success { color: var(--correct); }
+        .text-error { color: var(--incorrect); }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .dnd-container { flex-direction: column; }
+            .controls { flex-direction: column; }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Verbaspekte: делать (NSV) vs. сделать (SV)</h2>
+
+    <div class="intro-box">
+        <h3>Einführung</h3>
+        <p>Im Russischen gibt es für fast jedes Verb zwei Formen (Aspekte). Diese unterscheiden nicht die Zeitform (Vergangenheit/Zukunft), sondern <strong>wie</strong> die Handlung betrachtet wird.</p>
+        
+        <p><strong>1. НСВ (Unvollendeter Aspekt) - делать</strong> (tun/machen)</p>
+        <ul>
+            <li><strong>Prozess:</strong> Die Handlung dauert an (ohne Fokus auf das Ende). <br><em>Beispiel: Я делал уроки 2 часа. (Ich habe 2 Stunden lang Hausaufgaben gemacht.)</em></li>
+            <li><strong>Wiederholung:</strong> Die Handlung passiert oft, immer, jeden Tag.<br><em>Beispiel: Я делаю зарядку каждый день. (Ich mache jeden Tag Frühsport.)</em></li>
+            <li><strong>Fakt:</strong> Benennung der Tätigkeit allgemein.<br><em>Beispiel: Ты делал это? (Hast du das gemacht?)</em></li>
+        </ul>
+
+        <p><strong>2. СВ (Vollendeter Aspekt) - сделать</strong> (fertig machen/erledigen)</p>
+        <ul>
+            <li><strong>Resultat:</strong> Die Handlung ist abgeschlossen, das Ergebnis ist da.<br><em>Beispiel: Я сделал уроки. (Ich habe die Hausaufgaben fertig/erledigt.)</em></li>
+            <li><strong>Einmaligkeit:</strong> Eine konkrete Handlung zu einem bestimmten Zeitpunkt.<br><em>Beispiel: Он быстро сделал фото. (Er hat schnell ein Foto gemacht.)</em></li>
+        </ul>
+    </div>
+
+    <!-- Aufgabe 1: Multiple Choice -->
+    <div class="exercise-card" id="ex1">
+        <span class="exercise-title">Aufgabe 1: Prozess oder Resultat?</span>
+        <p>Entscheide: Ist der Satz ein Prozess/Wiederholung (NSV) oder ein Resultat (SV)?</p>
+        <div class="question-block">
+            <p>1. Анна долго <strong>делала</strong> домашнее задание. (Sie hat lange Hausaufgaben gemacht.)</p>
+            <div class="radio-group" data-correct="nsv">
+                <label><input type="radio" name="ex1_q1" value="nsv"> Prozess / Dauer (NSV)</label>
+                <label><input type="radio" name="ex1_q1" value="sv"> Resultat / Abgeschlossen (SV)</label>
+            </div>
+        </div>
+        <div class="question-block">
+            <p>2. Наконец-то я <strong>сделал</strong> всё! (Endlich habe ich alles erledigt!)</p>
+            <div class="radio-group" data-correct="sv">
+                <label><input type="radio" name="ex1_q2" value="nsv"> Prozess / Dauer (NSV)</label>
+                <label><input type="radio" name="ex1_q2" value="sv"> Resultat / Abgeschlossen (SV)</label>
+            </div>
+        </div>
+        
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkRadioExercise('ex1')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadioExercise('ex1')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveRadioExercise('ex1')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 2: Lückentext Vergangenheit -->
+    <div class="exercise-card" id="ex2">
+        <span class="exercise-title">Aufgabe 2: Konjugation in der Vergangenheit</span>
+        <p>Setze die richtige Form ein: <strong>делал</strong> (er machte, Prozess) oder <strong>сделал</strong> (er hat erledigt, Resultat).</p>
+        <p>1. Вчера папа весь вечер <input type="text" data-correct="делал"> машину. (Prozess)</p>
+        <p>2. Ура! Брат уже <input type="text" data-correct="сделал"> уроки. (Resultat)</p>
+        <p>3. Что ты <input type="text" data-correct="делал"> вчера в 5 часов? (Prozess)</p>
+        
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkInputExercise('ex2')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetInputExercise('ex2')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveInputExercise('ex2')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 3: Drag & Drop Signalwörter -->
+    <div class="exercise-card" id="ex3">
+        <span class="exercise-title">Aufgabe 3: Signalwörter zuordnen</span>
+        <p>Ziehe die Signalwörter in die richtige Box.</p>
+        
+        <div class="dnd-container">
+            <div class="dnd-source" id="ex3-source" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h4>Wörter:</h4>
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="w1" data-target="nsv">часто (oft)</div>
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="w2" data-target="sv">вдруг (plötzlich)</div>
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="w3" data-target="nsv">каждый день (jeden Tag)</div>
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="w4" data-target="sv">наконец (endlich)</div>
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="w5" data-target="nsv">долго (lange)</div>
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="w6" data-target="sv">сразу (sofort)</div>
+            </div>
+        </div>
+        <br>
+        <div class="dnd-container">
+            <div class="dnd-target" id="ex3-nsv" data-type="nsv" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h4>НСВ (Prozess/Wiederholung)</h4>
+            </div>
+            <div class="dnd-target" id="ex3-sv" data-type="sv" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h4>СВ (Resultat/Einmalig)</h4>
+            </div>
+        </div>
+
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkDnDExercise('ex3')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetDnDExercise('ex3', 'ex3-source')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveDnDExercise('ex3', ['ex3-nsv', 'ex3-sv'])">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 4: Dropdown -->
+    <div class="exercise-card" id="ex4">
+        <span class="exercise-title">Aufgabe 4: Wähle den richtigen Aspekt</span>
+        <p>Wähle das passende Verb aus der Liste.</p>
+        
+        <p>1. Я хочу <select data-correct="сделать"><option value="">...</option><option value="делать">делать</option><option value="сделать">сделать</option></select> это упражнение сейчас. (Resultat erwünscht)</p>
+        <p>2. Я люблю <select data-correct="делать"><option value="">...</option><option value="делать">делать</option><option value="сделать">сделать</option></select> подарки. (Allgemein/Immer)</p>
+        <p>3. Ты можешь <select data-correct="сделать"><option value="">...</option><option value="делать">делать</option><option value="сделать">сделать</option></select> мне чай? (Bitte um Resultat)</p>
+
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkInputExercise('ex4')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetInputExercise('ex4')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveInputExercise('ex4')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 5: Wahr oder Falsch -->
+    <div class="exercise-card" id="ex5">
+        <span class="exercise-title">Aufgabe 5: Konzept-Check</span>
+        <p>Ist die Aussage wahr oder falsch?</p>
+        
+        <div class="question-block">
+            <p>1. "делать" (NSV) benutzt man, wenn man sagen will, dass etwas fertig ist.</p>
+            <div class="radio-group" data-correct="falsch">
+                <label><input type="radio" name="ex5_q1" value="wahr"> Wahr</label>
+                <label><input type="radio" name="ex5_q1" value="falsch"> Falsch</label>
+            </div>
+        </div>
+        <div class="question-block">
+            <p>2. "сделать" (SV) hat keine Gegenwartsform (Präsens).</p>
+            <div class="radio-group" data-correct="wahr">
+                <label><input type="radio" name="ex5_q2" value="wahr"> Wahr (Es hat nur Zukunft und Vergangenheit)</label>
+                <label><input type="radio" name="ex5_q2" value="falsch"> Falsch</label>
+            </div>
+        </div>
+
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkRadioExercise('ex5')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadioExercise('ex5')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveRadioExercise('ex5')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 6: Sätze zuordnen (Meaning) -->
+    <div class="exercise-card" id="ex6">
+        <span class="exercise-title">Aufgabe 6: Bedeutung zuordnen</span>
+        <p>Welcher deutsche Satz passt zu welchem russischen Satz?</p>
+        
+        <div class="dnd-container">
+            <div class="dnd-source" id="ex6-source" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h4>Sätze:</h4>
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="s1" data-target="zone1">Он делал это.</div>
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="s2" data-target="zone2">Он сделал это.</div>
+            </div>
+        </div>
+        <br>
+        <div class="dnd-container">
+            <div class="dnd-target" id="ex6-z1" data-type="zone1" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h4>Er hat daran gearbeitet. (war dabei)</h4>
+            </div>
+            <div class="dnd-target" id="ex6-z2" data-type="zone2" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h4>Er hat es erledigt. (ist fertig)</h4>
+            </div>
+        </div>
+
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkDnDExercise('ex6')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetDnDExercise('ex6', 'ex6-source')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveDnDExercise('ex6', ['ex6-z1', 'ex6-z2'])">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 7: Imperativ -->
+    <div class="exercise-card" id="ex7">
+        <span class="exercise-title">Aufgabe 7: Imperativ (Befehlsform)</span>
+        <p>Für Verbote nutzt man meist NSV (не делай), für konkrete Bitten SV (сделай). Ergänze.</p>
+        <p>1. (Bitte) <input type="text" data-correct="Сделай"> это сейчас, пожалуйста! (Mach es fertig!)</p>
+        <p>2. (Verbot) Не <input type="text" data-correct="делай"> ошибок! (Mach keine Fehler!)</p>
+        
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkInputExercise('ex7')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetInputExercise('ex7')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveInputExercise('ex7')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 8: Frage stellen -->
+    <div class="exercise-card" id="ex8">
+        <span class="exercise-title">Aufgabe 8: Die richtige Frage</span>
+        <p>Jemand zeigt dir ein fertiges Bild. Welche Frage stellst du?</p>
+        <div class="radio-group" data-correct="sv">
+            <label><input type="radio" name="ex8_q1" value="nsv"> Что ты делал? (Woran hast du gearbeitet?)</label>
+            <label><input type="radio" name="ex8_q1" value="sv"> Что ты сделал? (Was hast du fertiggestellt?)</label>
+        </div>
+
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkRadioExercise('ex8')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadioExercise('ex8')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveRadioExercise('ex8')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 9: Satzbau -->
+    <div class="exercise-card" id="ex9">
+        <span class="exercise-title">Aufgabe 9: Satzbau (Zukunft)</span>
+        <p>Bilde den Satz: "Ich werde das morgen machen (erledigen)."</p>
+        <p><em>Tipp: SV Zukunft = Präfix-Form (ohne 'werde').</em></p>
+        
+        <div class="dnd-container">
+            <div class="dnd-source" id="ex9-source" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="w9-1" data-order="2">сделаю</div>
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="w9-3" data-order="3">это</div>
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="w9-2" data-order="1">Я</div>
+                <div class="draggable" draggable="true" ondragstart="drag(event)" id="w9-4" data-order="4">завтра</div>
+            </div>
+        </div>
+        <br>
+        <div class="dnd-container">
+            <div class="dnd-target" id="ex9-target" data-type="sentence" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 80px; width: 100%;">
+                <h4>Satz hier bilden:</h4>
+            </div>
+        </div>
+
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkOrderExercise('ex9', 'ex9-target')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetDnDExercise('ex9', 'ex9-source')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveOrderExercise('ex9', 'ex9-target', ['w9-2', 'w9-1', 'w9-3', 'w9-4'])">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 10: Aspektpartner -->
+    <div class="exercise-card" id="ex10">
+        <span class="exercise-title">Aufgabe 10: Aspektpartner finden</span>
+        <p>Nenne das passende SV-Verb zu "делать" (Infinitiv).</p>
+        <p>делать -> <input type="text" data-correct="сделать"></p>
+        
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkInputExercise('ex10')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetInputExercise('ex10')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveInputExercise('ex10')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 11: Kontext Zukunft -->
+    <div class="exercise-card" id="ex11">
+        <span class="exercise-title">Aufgabe 11: Zukunft komplex</span>
+        <p>Ergänze: "Завтра я буду весь день ... " (Morgen werde ich den ganzen Tag ...)</p>
+        <p>Da "den ganzen Tag" eine Dauer ist, brauchen wir:</p>
+        <div class="radio-group" data-correct="nsz">
+            <label><input type="radio" name="ex11_q1" value="nsz"> делать (буду делать)</label>
+            <label><input type="radio" name="ex11_q1" value="sz"> сделать (буду сделать - falsch!)</label>
+        </div>
+
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkRadioExercise('ex11')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadioExercise('ex11')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveRadioExercise('ex11')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 12: Auswahl im Text -->
+    <div class="exercise-card" id="ex12">
+        <span class="exercise-title">Aufgabe 12: Dialog</span>
+        <p>- Ты уже <select data-correct="сделал"><option value="делал">делал</option><option value="сделал">сделал</option></select> кофе? (Resultat)</p>
+        <p>- Нет, я ещё <select data-correct="делаю"><option value="делаю">делаю</option><option value="сделаю">сделаю</option></select>. (Prozess jetzt gerade)</p>
+
+        <div class="feedback-msg"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkInputExercise('ex12')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetInputExercise('ex12')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveInputExercise('ex12')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- Allgemeine Hilfsfunktionen ---
+    function setFeedback(cardId, isCorrect, message) {
+        const card = document.getElementById(cardId);
+        const feedbackDiv = card.querySelector('.feedback-msg');
+        feedbackDiv.className = 'feedback-msg show ' + (isCorrect ? 'text-success' : 'text-error');
+        feedbackDiv.innerText = message || (isCorrect ? 'Richtig!' : 'Leider falsch, versuche es noch einmal.');
+    }
+
+    function clearFeedback(cardId) {
+        const card = document.getElementById(cardId);
+        const feedbackDiv = card.querySelector('.feedback-msg');
+        feedbackDiv.className = 'feedback-msg';
+        feedbackDiv.innerText = '';
+    }
+
+    // --- Logik für Text Inputs & Selects ---
+    function checkInputExercise(cardId) {
+        const card = document.getElementById(cardId);
+        const inputs = card.querySelectorAll('input[type="text"], select');
+        let allCorrect = true;
+
+        inputs.forEach(input => {
+            // Case insensitive Vergleich
+            if (input.value.trim().toLowerCase() === input.getAttribute('data-correct').toLowerCase()) {
+                input.classList.add('correct-input');
+                input.classList.remove('incorrect-input');
+            } else {
+                input.classList.add('incorrect-input');
+                input.classList.remove('correct-input');
+                allCorrect = false;
+            }
+        });
+
+        setFeedback(cardId, allCorrect);
+    }
+
+    function resetInputExercise(cardId) {
+        const card = document.getElementById(cardId);
+        const inputs = card.querySelectorAll('input[type="text"], select');
+        inputs.forEach(input => {
+            input.value = '';
+            input.classList.remove('correct-input', 'incorrect-input');
+        });
+        clearFeedback(cardId);
+    }
+
+    function solveInputExercise(cardId) {
+        const card = document.getElementById(cardId);
+        const inputs = card.querySelectorAll('input[type="text"], select');
+        inputs.forEach(input => {
+            input.value = input.getAttribute('data-correct');
+            input.classList.remove('incorrect-input');
+            input.classList.add('correct-input');
+        });
+        setFeedback(cardId, true, "Lösungen angezeigt.");
+    }
+
+    // --- Logik für Radio Buttons ---
+    function checkRadioExercise(cardId) {
+        const card = document.getElementById(cardId);
+        const groups = card.querySelectorAll('.radio-group');
+        let allCorrect = true;
+
+        groups.forEach(group => {
+            const correctVal = group.getAttribute('data-correct');
+            const checked = group.querySelector('input:checked');
+            
+            // Reset styles
+            group.querySelectorAll('label').forEach(l => l.style.backgroundColor = '');
+
+            if (checked && checked.value === correctVal) {
+                checked.parentElement.style.backgroundColor = '#e8f5e9';
+                checked.parentElement.style.border = '1px solid var(--correct)';
+            } else {
+                allCorrect = false;
+                if(checked) {
+                    checked.parentElement.style.backgroundColor = '#ffebee';
+                }
+            }
+        });
+
+        // Prüfung ob überhaupt etwas ausgewählt wurde
+        let anyChecked = card.querySelector('input:checked');
+        if(!anyChecked) allCorrect = false;
+
+        setFeedback(cardId, allCorrect);
+    }
+
+    function resetRadioExercise(cardId) {
+        const card = document.getElementById(cardId);
+        const inputs = card.querySelectorAll('input[type="radio"]');
+        inputs.forEach(input => {
+            input.checked = false;
+            input.parentElement.style.backgroundColor = '';
+            input.parentElement.style.border = '';
+        });
+        clearFeedback(cardId);
+    }
+
+    function solveRadioExercise(cardId) {
+        const card = document.getElementById(cardId);
+        const groups = card.querySelectorAll('.radio-group');
+        groups.forEach(group => {
+            const correctVal = group.getAttribute('data-correct');
+            const correctInput = group.querySelector(`input[value="${correctVal}"]`);
+            if(correctInput) {
+                correctInput.checked = true;
+                correctInput.parentElement.style.backgroundColor = '#e8f5e9';
+            }
+        });
+        setFeedback(cardId, true, "Lösungen angezeigt.");
+    }
+
+    // --- Drag and Drop Functions ---
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var draggedElement = document.getElementById(data);
+        
+        // Finde das korrekte Ziel (könnte ein child element des targets sein)
+        let target = ev.target;
+        while (!target.classList.contains('dnd-target') && !target.classList.contains('dnd-source')) {
+            target = target.parentElement;
+            if(!target) return; // Sicherheitsabbruch
+        }
+        
+        target.appendChild(draggedElement);
+    }
+
+    // Check Logic für Kategorisierung (Aufgabe 3 & 6)
+    function checkDnDExercise(cardId) {
+        const card = document.getElementById(cardId);
+        const targets = card.querySelectorAll('.dnd-target');
+        let allCorrect = true;
+        let totalItems = 0;
+
+        targets.forEach(target => {
+            const requiredType = target.getAttribute('data-type');
+            const items = target.querySelectorAll('.draggable');
+            
+            items.forEach(item => {
+                totalItems++;
+                if (item.getAttribute('data-target') === requiredType) {
+                    item.style.borderColor = 'var(--correct)';
+                    item.style.backgroundColor = '#e8f5e9';
+                } else {
+                    item.style.borderColor = 'var(--incorrect)';
+                    item.style.backgroundColor = '#ffebee';
+                    allCorrect = false;
+                }
+            });
+        });
+
+        // Wenn noch Items in der Source sind, ist es nicht fertig
+        const sourceItems = card.querySelectorAll('.dnd-source .draggable');
+        if (sourceItems.length > 0) allCorrect = false;
+
+        setFeedback(cardId, allCorrect && totalItems > 0);
+    }
+
+    // Check Logic für Reihenfolge (Aufgabe 9)
+    function checkOrderExercise(cardId, targetId) {
+        const target = document.getElementById(targetId);
+        const items = target.querySelectorAll('.draggable');
+        let allCorrect = true;
+        
+        if (items.length === 0) allCorrect = false;
+
+        let currentOrder = 0;
+        items.forEach((item, index) => {
+            const correctOrder = parseInt(item.getAttribute('data-order'));
+            // Wir prüfen hier relative Reihenfolge: 1, 2, 3, 4
+            // Index 0 muss Order 1 sein, Index 1 Order 2, etc.
+            if (correctOrder !== (index + 1)) {
+                item.style.borderColor = 'var(--incorrect)';
+                allCorrect = false;
+            } else {
+                item.style.borderColor = 'var(--correct)';
+                item.style.backgroundColor = '#e8f5e9';
+            }
+        });
+
+        // Check if items left in source
+        const card = document.getElementById(cardId);
+        const sourceItems = card.querySelectorAll('.dnd-source .draggable');
+        if (sourceItems.length > 0) allCorrect = false;
+
+        setFeedback(cardId, allCorrect);
+    }
+
+    function resetDnDExercise(cardId, sourceId) {
+        const card = document.getElementById(cardId);
+        const source = document.getElementById(sourceId);
+        const allDraggables = card.querySelectorAll('.draggable');
+
+        // Sortieren nach ID um ursprüngliche Reihenfolge wiederherzustellen (optional)
+        const sorted = Array.from(allDraggables).sort((a, b) => a.id.localeCompare(b.id));
+
+        sorted.forEach(el => {
+            el.style.borderColor = '';
+            el.style.backgroundColor = '';
+            source.appendChild(el);
+        });
+        clearFeedback(cardId);
+    }
+
+    function solveDnDExercise(cardId, targetIds) {
+        const card = document.getElementById(cardId);
+        const draggables = card.querySelectorAll('.draggable');
+        
+        draggables.forEach(el => {
+            const targetType = el.getAttribute('data-target');
+            // Finde die Target-Box mit diesem data-type
+            targetIds.forEach(tid => {
+                const box = document.getElementById(tid);
+                if (box.getAttribute('data-type') === targetType) {
+                    box.appendChild(el);
+                    el.style.borderColor = 'var(--correct)';
+                    el.style.backgroundColor = '#e8f5e9';
+                }
+            });
+        });
+        setFeedback(cardId, true, "Lösungen angezeigt.");
+    }
+
+    function solveOrderExercise(cardId, targetId, orderedIds) {
+        const target = document.getElementById(targetId);
+        orderedIds.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                target.appendChild(el);
+                el.style.borderColor = 'var(--correct)';
+                el.style.backgroundColor = '#e8f5e9';
+            }
+        });
+        setFeedback(cardId, true, "Lösungen angezeigt.");
+    }
+
+</script>
+
+</body>
+</html>
